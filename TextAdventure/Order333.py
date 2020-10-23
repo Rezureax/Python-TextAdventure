@@ -17,7 +17,7 @@ Gegner1Attack = 50
 Gegner2Health = 100
 Gegner2Attack = 75
 ergebnis = 0
-base_nummer = int(0)
+base_nummer = int(2)
 Hunger = 50
 count = 1
 meat = 5
@@ -26,9 +26,16 @@ feldchecker = 0
 my_file = Path('store.pckl')
 Sauerstoff = 100
 inbase = False
+planetfinder = 0
+randomplanet = 0
+onplanet = False
+name = "Default"
+computersperre = False
+treibstoff = 100
 
 
 
+planet_list = []
 base_list = []
 anbau_list = []
 material_list = []
@@ -409,6 +416,35 @@ def nahrung():
     print(meat)
 
 
+def sonde():
+    global base_nummer
+    global treibstoff
+    if base_nummer >= 2 and treibstoff > 20:
+        starten = input("Willst du die Sonde wirklick starten um neue Planeten zu entdecken?\n>")
+        if starten == "Ja":
+            print("Sonde wird gestartet.")
+            print("READY FOR LAUNCH")
+            print("3")
+            time.sleep(1)
+            print("2")
+            time.sleep(1)
+            print("1")
+            time.sleep(2)
+            print("START")
+            insonde()
+        elif starten == "NEIN":
+            print("ABBRUCH\nSonde wird nicht gestartet")
+        else:
+            print("Eingabe konnte nicht verstanden werden.Antworte in Ja oder Nein")
+            print(sonde())
+    else:
+        print("Sonde konnte nicht gestartet werden.\nDeine Basis muss ein Level von über 2 haben,\nund du musst mehr als 20 Treibstoff haben")
+        print("Dein Basislevel:")
+        print(base_nummer)
+        print("Dein Treibstoff:")
+        print(treibstoff)
+
+
 def sauerstoff():
     print(Sauerstoff)
 
@@ -454,6 +490,138 @@ def load():
     print("Erfolgreich geladen")
 
 
+def onplanet():
+    global randomplanet
+    global onplanet
+    onplanet = True
+    print("Du bist jetzt auf deinem Planet "  +str(randomplanet))
+    while True:
+        command = input(">").lower().split(" ")  # pickup
+        if command[0] in PlanetCommands:
+            PlanetCommands[command[0]]()
+        else:
+            print("You run around in circles and don't know what to do.")
+
+
+def planet():
+    global planetfinder
+    global randomplanet
+    global planet_list
+    if planetfinder > 3 or planetfinder ==  0:
+        print("Es sind keine Planeten in der Nähe")
+        print(insonde2())
+    elif planetfinder == 1 or planetfinder == 2 or planetfinder == 3:
+        print("Es wurde ein Planet gefunden")
+        randomplanet = randrange(4)
+        if randomplanet == 0:
+            randomplanet = "Nibiru"
+        if randomplanet == 1:
+            randomplanet = "Coruscant"
+        if randomplanet == 2:
+            randomplanet = "Titan"
+        if randomplanet == 3:
+            randomplanet = "Xena"
+        if randomplanet == 4:
+            randomplanet = "Xena"
+        else:
+            pass
+        print("Dein Planet ist " + str(randomplanet))
+        travel = input("Willst du zu dem Planeten reisen?\n>")
+        if travel == "Ja":
+            planet_list.append(randomplanet)
+            print("Okay")
+            print(onplanet())
+        if travel == "Nein":
+           print("Okay.Du reißt nicht zu dem Planeten")
+
+
+def find():
+    global planetfinder
+    print("Suche nach neuen Planeten")
+    randomnumber = randrange(11)
+    planetfinder = randomnumber
+    print(planet())
+
+
+
+
+def mars():
+    print("Du kehrst zurück auf den Mars")
+    print("Du bist wieder auf dem Mars")
+    print(ContinueMission())
+
+
+
+def in_sonde_computer():
+    while True:
+        command = input(">").lower().split(" ")  # pickup
+        if command[0] in SondeComputerCommands:
+            SondeComputerCommands[command[0]]()
+
+
+def sonde_computer():
+    global name
+    global computersperre
+    print("Einloggen in Computer..")
+    if computersperre == False:
+        passwort = str(input("Gebe das Passwort ein.\nTipp:Das Passwort ist dein Name\n:"))
+        if name == passwort:
+            print("Login erfolgreich")
+            computersperre = False
+            print(in_sonde_computer())
+        else:
+            print("Login nicht erfolgreich")
+            print("Computer gesperrt")
+            computersperre = True
+            print(insonde())
+    elif computersperre == True:
+        print("Dein Computer ist gesperrt.Da du das letzte mal,dass passwort falsch eingegeben hast.")
+        print("Warte noch 20 Sekunden.")
+        time.sleep(20)
+        print("Starte Computer neu...")
+        computersperre = False
+        print(sonde_computer())
+
+
+def sonde_computer_help():
+    print(SondeComputerCommands.keys())
+
+def computer_exit():
+    print("Computer wird verlassen.")
+    print(insonde())
+
+
+def planet_infos():
+    global planet_list
+    print("Auf diesen Planeten warst du schon:")
+    print(planet_list)
+
+SondeComputerCommands = {
+
+    'help': sonde_computer_help,
+    'exit': computer_exit,
+    'infos': planet_infos
+
+}
+
+
+def sonde_help():
+    print(Sonde_Commands.keys())
+
+
+
+Sonde_Commands = {
+    'help': sonde_help,
+    'planet': planet,
+    'find': find,
+    'mars': mars,
+    'computer': sonde_computer
+
+
+
+}
+
+
 Commands2 = {
     'sleep': game_sleep,
     'back': get_back,
@@ -481,6 +649,30 @@ Commands2 = {
 
 }
 
+PlanetCommands = {
+    'help': game_help,
+    'walk': move_walk,
+    'resourcen': resourcen,
+    'health': health,
+    'attack': attack,
+    'ruestung': rüstung,
+    'self':testLeben,
+    'leben': leben,
+    'chance':game_chance,
+    'hunger': hunger,
+    'essen': essen,
+    'save': save,
+    'load': load,
+    'nahrung': nahrung,
+    'sauerstoff': sauerstoff,
+    'sonde': sonde,
+    'mars': mars
+
+
+
+}
+
+
 Commands = {
     'help': game_help,
     'base': game_base,
@@ -498,10 +690,31 @@ Commands = {
     'load': load,
     'nahrung': nahrung,
     'sauerstoff': sauerstoff,
+    'sonde': sonde
 
 
 
 }
+
+
+def insonde():
+    print("Du bist jetzt in deiner Sonde.Drücke help für deine Befehle")
+    while True:
+        command = input(">").lower().split(" ")  # pickup
+        if command[0] in Sonde_Commands:
+            Sonde_Commands[command[0]]()
+        else:
+            print("You run around in circles and don't know what to do.")
+
+
+def insonde2():
+    while True:
+        command = input(">").lower().split(" ")  # pickup
+        if command[0] in Sonde_Commands:
+            Sonde_Commands[command[0]]()
+        else:
+            print("You run around in circles and don't know what to do.")
+
 
 def ContinueMission():
     while True:
@@ -541,8 +754,9 @@ def essensfeld():
 
 def Spieler():
     global autosave
+    global name
     health = 100
-    name = input("Wie ist dein Name?\n>")
+    name = str(input("Wie ist dein Name?\n>"))
     autosave = input("Soll das Spiel alle 15 Minuten automatisch gespeichert werden?\nJa oder Nein\n>")
     if autosave == "Ja":
         print("Das Spiel wird ab jetzt alle 15 Minuten gespeichert")
