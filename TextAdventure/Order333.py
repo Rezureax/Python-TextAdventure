@@ -24,6 +24,8 @@ meat = 5
 anbauchecker = 0
 feldchecker = 0
 my_file = Path('store.pckl')
+Sauerstoff = 100
+inbase = False
 
 
 
@@ -37,7 +39,9 @@ if Überlebenschancen == 10:
 
 
 def game_base():
-    print("Now, you are in your little selfbuild base.What do you want to do?")
+    global inbase
+    print("Du bist jetzt in deinem selsbtgebauten Unterschlupf.\nWas willst du jetzt machen?")
+    inbase = True
     while True:
         command = input(">").lower().split(" ")  # pickup
         if command[0] in Commands2:
@@ -46,6 +50,8 @@ def game_base():
             print("You run around in circles and don't know what to do.")
 
 def get_back():
+    global inbase
+    inbase = False
     print(ContinueMission())
 
 def testLeben():
@@ -75,9 +81,10 @@ def move_walk():
     global ergebnis
     global Hunger
     global material_list
+    global Sauerstoff
     random = randrange(21)
     leben2 = 100
-    if random == 0 or random == 1 or random > 15:
+    if random == 0 or random == 1 or random > 16:
         print("Du hast hier nichts gefunden")
     if random == 2:
         print("Du siehst ein Gegner.Willst du kämpfen?")
@@ -176,6 +183,10 @@ def move_walk():
         material_list.append('Stein')
         material_list.append('Stein')
         material_list.append('Stein')
+    if random == 16:
+        print("Du hast eine Sauerstoffflasche gefunden.")
+        Sauerstoff += 20
+
 
 
 def game_connection():
@@ -394,6 +405,13 @@ def save():
         f.close()
         print("Erfolgreich gespeichert")
 
+def nahrung():
+    print(meat)
+
+
+def sauerstoff():
+    print(Sauerstoff)
+
 def load():
     global my_file
     global Überlebenschancen
@@ -456,6 +474,8 @@ Commands2 = {
     'hunger': hunger,
     'essen': essen,
     'connection': game_connection,
+    'nahrung': nahrung,
+    'sauerstoff': sauerstoff
 
 
 
@@ -475,7 +495,9 @@ Commands = {
     'hunger': hunger,
     'essen': essen,
     'save': save,
-    'load': load
+    'load': load,
+    'nahrung': nahrung,
+    'sauerstoff': sauerstoff,
 
 
 
@@ -536,6 +558,16 @@ def Loop():
     while True:
         Hunger -= 1
         time.sleep(20)
+
+def SauerStoffLoop():
+    global Sauerstoff
+    global inbase
+    while True:
+        if inbase == False:
+            Sauerstoff -= 1
+            time.sleep(10)
+        else:
+            pass
 
 def HungerLoop():
     global Hunger
@@ -639,6 +671,7 @@ def Menu():
 b = threading.Thread(name='Loop', target=Loop)
 s = threading.Thread(name='saveloop', target=saveloop)
 d = threading.Thread(name='essenloop', target=essenloop)
+h = threading.Thread(name='sauerstoff', target=SauerStoffLoop)
 a = threading.Thread(name='essenfeld', target=essensfeld)
 c = threading.Thread(name='hungerloop', target=HungerLoop)
 f = threading.Thread(name='Menu', target=Menu)
@@ -646,6 +679,7 @@ f = threading.Thread(name='Menu', target=Menu)
 
 c.start()
 s.start()
+h.start()
 a.start()
 d.start()
 b.start()
