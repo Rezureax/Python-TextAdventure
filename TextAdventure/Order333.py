@@ -32,7 +32,11 @@ onplanet = False
 name = "Default"
 computersperre = False
 treibstoff = 100
-
+insonde = False
+sondezustand = 19
+entfernung = 400
+roverzustand = 15
+roveraktiv = False
 
 
 planet_list = []
@@ -149,7 +153,7 @@ def move_walk():
         Attack + 10
 
     if random == 8:
-        print("Du hast eine kaputte Pistole gefunden.\nWillst du sie reparieren?Das kostet dich 25 Resourcen")
+        print("Du hast eine kaputte Pistole gefunden.\nWillst du sie reparieren?Das kostet dich 25 Resourcen\n>")
         answer2 = str(input("YES or NO"))
         if answer2 == "YES":
             if Resourcen >= 25:
@@ -247,14 +251,17 @@ def exit():
     print(ContinueMission())
 
 def infos():
+    global sondezustand
     print("Über was willst du Infos haben?")
-    infoinput = str(input("Marsianer oder die Erde?\n>"))
+    infoinput = str(input("Marsianer,Sonde oder die Erde?\n>"))
     if infoinput == "Marsianer":
         print("Okay...\nInfos werden geladen...")
         print("Wir haben noch keine Infos über die Marsianer erhalten")
     elif infoinput == "Erde":
         print("Okay\nInfos werden geladen..")
         print("Wir haben noch keine Infos über die Marsianer erhalten")
+    elif infoinput == "Sonde":
+        print("Deine Sonde hat einen Zustand von " +str(sondezustand))
     else:
         print("Infos konnten nicht geladen werden")
 
@@ -419,7 +426,9 @@ def nahrung():
 def sonde():
     global base_nummer
     global treibstoff
-    if base_nummer >= 2 and treibstoff > 20:
+    global sondezustand
+    global insonde
+    if base_nummer >= 2 and treibstoff >= 20 and sondezustand > 5:
         starten = input("Willst du die Sonde wirklick starten um neue Planeten zu entdecken?\n>")
         if starten == "Ja":
             print("Sonde wird gestartet.")
@@ -431,18 +440,21 @@ def sonde():
             print("1")
             time.sleep(2)
             print("START")
-            insonde()
+            insonde = True
+            insonde1()
         elif starten == "NEIN":
             print("ABBRUCH\nSonde wird nicht gestartet")
         else:
             print("Eingabe konnte nicht verstanden werden.Antworte in Ja oder Nein")
             print(sonde())
     else:
-        print("Sonde konnte nicht gestartet werden.\nDeine Basis muss ein Level von über 2 haben,\nund du musst mehr als 20 Treibstoff haben")
+        print("Sonde konnte nicht gestartet werden.\nDeine Basis muss ein Level von über 2 haben,\n,mehr Treibstoff als 20 und ein Zustand von über 5 haben")
         print("Dein Basislevel:")
         print(base_nummer)
         print("Dein Treibstoff:")
         print(treibstoff)
+        print("Dein Zustand der Sonde")
+        print(sondezustand)
 
 
 def sauerstoff():
@@ -493,8 +505,10 @@ def load():
 def onplanet():
     global randomplanet
     global onplanet
+    global insonde
     onplanet = True
     print("Du bist jetzt auf deinem Planet "  +str(randomplanet))
+    insonde = False
     while True:
         command = input(">").lower().split(" ")  # pickup
         if command[0] in PlanetCommands:
@@ -507,6 +521,7 @@ def planet():
     global planetfinder
     global randomplanet
     global planet_list
+    global insonde
     if planetfinder > 3 or planetfinder ==  0:
         print("Es sind keine Planeten in der Nähe")
         print(insonde2())
@@ -530,6 +545,7 @@ def planet():
         if travel == "Ja":
             planet_list.append(randomplanet)
             print("Okay")
+            insonde = False
             print(onplanet())
         if travel == "Nein":
            print("Okay.Du reißt nicht zu dem Planeten")
@@ -546,8 +562,10 @@ def find():
 
 
 def mars():
+    global insonde
     print("Du kehrst zurück auf den Mars")
     print("Du bist wieder auf dem Mars")
+    insonde = False
     print(ContinueMission())
 
 
@@ -573,7 +591,7 @@ def sonde_computer():
             print("Login nicht erfolgreich")
             print("Computer gesperrt")
             computersperre = True
-            print(insonde())
+            print(insonde1())
     elif computersperre == True:
         print("Dein Computer ist gesperrt.Da du das letzte mal,dass passwort falsch eingegeben hast.")
         print("Warte noch 20 Sekunden.")
@@ -588,7 +606,7 @@ def sonde_computer_help():
 
 def computer_exit():
     print("Computer wird verlassen.")
-    print(insonde())
+    print(insonde1())
 
 
 def planet_infos():
@@ -596,11 +614,28 @@ def planet_infos():
     print("Auf diesen Planeten warst du schon:")
     print(planet_list)
 
+
+def zustand():
+    global sondezustand
+    print("Der Zustand deiner Sonde beträgt " + str(sondezustand))
+
+def erde_entfernung():
+    global entfernung
+    entfernunginput = input("Willst du die Entfernung zum Mars oder der Erde wissen?\n>")
+    if entfernunginput == "Erde":
+        entfernung = randrange(400,800)
+        print("Deine Entfernung zu Erde beträgt " +str(entfernung) + "km")
+    elif entfernunginput == "Mars":
+        entfernung = randrange(200, 600)
+        print("Deine Entfernung zum Mars beträgt " +str(entfernung) + "km")
+
 SondeComputerCommands = {
 
     'help': sonde_computer_help,
     'exit': computer_exit,
-    'infos': planet_infos
+    'infos': planet_infos,
+    'zustand': zustand,
+    'entfernung': erde_entfernung
 
 }
 
@@ -609,13 +644,72 @@ def sonde_help():
     print(Sonde_Commands.keys())
 
 
+def reparieren():
+    global sondezustand
+    global material_list
+    reparierenfrage = input("Was willst du reparieren?\nSonde,....\n>")
+    if reparierenfrage == "Sonde":
+        if sondezustand < 20 and 'Eisen' in material_list and 'Seil' in material_list and 'Schraubenzieher' in material_list:
+            antwortreparieren = input("Willst du deine Sonde wirklich reparieren?\n>")
+            if antwortreparieren == "Ja":
+                print("Okay deine Sonde wird repariert")
+                sondezustand = 20
+            elif antwortreparieren == "Nein":
+                print("Okay deine Sonde wird nicht repariert")
+                print(ContinueMission())
+
+        elif sondezustand == 20:
+            print("Deine Sonde hat schon den besten Zustand von 20")
+
+        else:
+            print("Du hast nicht alle Materialien\nDu brauchst Eisen,ein Seil und ein Schraubenzieher")
+            print("Deine Materialien sind gerade:")
+            print(material_list)
+
+
+
+def roboter():
+    global treibstoff
+    global material_list
+    global roverzustand
+    global roveraktiv
+    if roverzustand >= 15:
+        repariereninput = input("Dein Rover ist aktuell kaputt willst du ihn reparieren?\n>")
+        if repariereninput == "Ja":
+            if 'Schraubenzieher' in material_list:
+                print("Dein Roboter wird repariert.Warte 5 Sekunden.")
+                time.sleep(5)
+                print("Dein Roboter wurde repariert")
+                roverzustand = 20
+            else:
+                print("Du hast nicht das nötige Equipment")
+                print("Du brauchst einen Schraubenzieher.Deine Materialien sind:")
+                print(material_list)
+        if repariereninput == "Nein":
+            print("Schade.Er ist wirklich sehr hilfsvoll")
+    else:
+        pass
+
+    if roverzustand == 20:
+        startrover = input("Soll der Roboter gestartet werden?")
+        if startrover == "Ja":
+            if treibstoff >= 25:
+                print("Rover wird gestartet,er wird dir viele Informationen sammeln")
+                roveraktiv = True
+
+            elif treibstoff < 25:
+                print("Du brauchst ein Treibstoff von mindestens 25")
+                print("Dein Treibstoff beträgt " +str(treibstoff))
+        else:
+            print("Dann nicht...")
+
 
 Sonde_Commands = {
     'help': sonde_help,
     'planet': planet,
     'find': find,
     'mars': mars,
-    'computer': sonde_computer
+    'computer': sonde_computer,
 
 
 
@@ -690,15 +784,19 @@ Commands = {
     'load': load,
     'nahrung': nahrung,
     'sauerstoff': sauerstoff,
-    'sonde': sonde
+    'sonde': sonde,
+    'reparieren': reparieren,
+    'roboter': roboter
 
 
 
 }
 
 
-def insonde():
+def insonde1():
+    global insonde
     print("Du bist jetzt in deiner Sonde.Drücke help für deine Befehle")
+    insonde = True
     while True:
         command = input(">").lower().split(" ")  # pickup
         if command[0] in Sonde_Commands:
@@ -708,6 +806,8 @@ def insonde():
 
 
 def insonde2():
+    global insonde
+    insonde = True
     while True:
         command = input(">").lower().split(" ")  # pickup
         if command[0] in Sonde_Commands:
@@ -860,6 +960,48 @@ def saveloop():
                 time.sleep(900)
 
 
+def sondezustandloop():
+    global sondezustand
+    global insonde
+    while True:
+        if sondezustand <= 0 and insonde == True:
+            print("Sonde würde zerstört.")
+            print("Du bist gestorben")
+            exit()
+
+def meterioitloop():
+    global insonde
+    global sondezustand
+    while True:
+        if insonde == False:
+            pass
+            time.sleep(10)
+
+        elif insonde == True:
+            meterioit = randrange(21)
+            if meterioit > 1:
+                pass
+                time.sleep(5)
+            elif meterioit == 1:
+                print("++++++++++Achtung++++++++++")
+                print("Meterioit wurde gesichtet")
+                print("++++++++++Achtung++++++++++")
+                print("Sonde wurde getroffen")
+                sondezustand -= 5
+                print("Landen sie auf einem Planeten und reparieren sie dort die Sonde")
+                print("Notlandung muss in den nächsten 20 Sekunden erfolgen")
+                if insonde == True:
+                    sondezustand -= 5
+                    time.sleep(6)
+                    sondezustand -= 5
+                    time.sleep(6)
+                    sondezustand -= 5
+                    time.sleep(6)
+
+                else:
+                    pass
+
+
 
 def essenloop():
     global Hunger
@@ -869,6 +1011,14 @@ def essenloop():
             exit(0)
         else:
             pass
+
+
+def sauerstoff():
+    global Sauerstoff
+    if Sauerstoff >= 100:
+        Sauerstoff = 100
+
+
 
 def Menu():
     print("#######################")
@@ -883,6 +1033,8 @@ def Menu():
         exit(0)
 
 b = threading.Thread(name='Loop', target=Loop)
+k = threading.Thread(name='sondezustand', target=sondezustandloop)
+l = threading.Thread(name='meterioitloop', target=meterioitloop)
 s = threading.Thread(name='saveloop', target=saveloop)
 d = threading.Thread(name='essenloop', target=essenloop)
 h = threading.Thread(name='sauerstoff', target=SauerStoffLoop)
@@ -896,5 +1048,7 @@ s.start()
 h.start()
 a.start()
 d.start()
+k.start()
+l.start()
 b.start()
 f.start()
