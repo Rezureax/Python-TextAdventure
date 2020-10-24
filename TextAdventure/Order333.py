@@ -37,12 +37,17 @@ sondezustand = 19
 entfernung = 400
 roverzustand = 15
 roveraktiv = False
+sondeaktiv = False
+roverlevel = 2
+nasaconnection = False
 
 
 planet_list = []
 base_list = []
 anbau_list = []
-material_list = []
+material_list = ['Schraubenzieher']
+info_list_marsianer = []
+info_list_selbst = []
 
 if Überlebenschancen == 10:
     print("Du hast es geschafft.Eine Sonde wird losgeschickt um dich zu holen")
@@ -428,9 +433,11 @@ def sonde():
     global treibstoff
     global sondezustand
     global insonde
+    global sondeaktiv
     if base_nummer >= 2 and treibstoff >= 20 and sondezustand > 5:
         starten = input("Willst du die Sonde wirklick starten um neue Planeten zu entdecken?\n>")
         if starten == "Ja":
+            sondeaktiv = True
             print("Sonde wird gestartet.")
             print("READY FOR LAUNCH")
             print("3")
@@ -673,7 +680,10 @@ def roboter():
     global material_list
     global roverzustand
     global roveraktiv
-    if roverzustand >= 15:
+    global roverlevel
+    global Überlebenschancen
+    global nasaconnection
+    if roverzustand <= 15 and roveraktiv == False:
         repariereninput = input("Dein Rover ist aktuell kaputt willst du ihn reparieren?\n>")
         if repariereninput == "Ja":
             if 'Schraubenzieher' in material_list:
@@ -690,7 +700,7 @@ def roboter():
     else:
         pass
 
-    if roverzustand == 20:
+    if roverzustand == 20 and roveraktiv == False:
         startrover = input("Soll der Roboter gestartet werden?")
         if startrover == "Ja":
             if treibstoff >= 25:
@@ -702,6 +712,55 @@ def roboter():
                 print("Dein Treibstoff beträgt " +str(treibstoff))
         else:
             print("Dann nicht...")
+    elif roverzustand == 20 and roveraktiv == True:
+        doroboter = input("Was willst du machen?\nVerbinden...exit\n>")
+        if doroboter == 'Verbinden' and roverlevel == 2:
+            if nasaconnection == False:
+                print("Dein Roboter verbindet sich mit den NASA Servern...")
+                print("Verbindung zu den NASA Servern wurde hergestellt.\nDeine Überlebenschancen haben sich um 7 Verbessert.")
+                nasaconnection = True
+                Überlebenschancen += 7
+                print("++++INFO++++")
+                print("Die NASA weiß jetzt deinen Standort")
+                print("Sie wird dich in nächster Zeit mit Essen versorgen...")
+            elif nasaconnection == True:
+                print("Es besteht schon eine Verbindung zur Nasa")
+            else:
+                print("Es ist ein Fehler aufgetreten")
+        elif doroboter == 'Verbinden' and roverlevel < 2:
+            print("Dein Roboter muss ein Level von mindestens 2 betragen")
+        else:
+            print("Es ist ein Fehler aufgetreten.")
+    else:
+        print("Dein Roboter läuft schon")
+
+    #if roveraktiv == True:
+
+
+
+def upgrade():
+    global roverlevel
+    global material_list
+    upgradeinput = input("Was willst du Upgraden\nMarsRover,...exit\n>")
+    if upgradeinput == 'MarsRover':
+        if 'Solarpanel' in material_list and 'MiniComputer' in material_list:
+            print("Dein Rover wird geupgraded")
+            roverlevel += 1
+            print("Dein Rover wurde geupgraded")
+            print("Deine Materialien sind jetzt noch:\n")
+            print(material_list)
+        else:
+            print("Du hast nicht genug Materialien\nDu brauchst ein Solarpanel und ein MiniComputer.")
+            print("Deine Materialien sind gerade:")
+            print(material_list)
+    elif upgradeinput == 'exit':
+        print("Schließung...")
+    else:
+        print("Inkorrekte Eingabe.Kehre zurück")
+        print(upgrade)
+
+
+
 
 
 Sonde_Commands = {
@@ -786,7 +845,8 @@ Commands = {
     'sauerstoff': sauerstoff,
     'sonde': sonde,
     'reparieren': reparieren,
-    'roboter': roboter
+    'roboter': roboter,
+    'upgrade': upgrade
 
 
 
@@ -890,6 +950,47 @@ def HungerLoop():
             Hunger = 50
         else:
             pass
+
+def roverloop():
+    global roveraktiv
+    global info_list_marsianer
+    global info_list_selbst
+    global name
+    global Überlebenschancen
+    if roveraktiv == True:
+        time.sleep(120)
+        roverinfo = randrange(11)
+        if roverinfo == 1:
+            info_list_marsianer.append('Stärke:50')
+        if roverinfo == 2:
+            info_list_marsianer.append('Leben:50')
+        if roverinfo == 3:
+            info_list_marsianer.append('Vorhanden: > 100')
+        if roverinfo == 4:
+            info_list_marsianer.append('Gefahr:Gering')
+        if roverinfo == 5:
+            info_list_marsianer.append('Waffen:UNBEKANNT')
+        if roverinfo == 6:
+            info_list_selbst.append('Dein Name: ' + name)
+        if roverinfo == 7:
+            info_list_selbst.append('Deine Überlebenschance:' +str(Überlebenschancen))
+        if roverinfo == 8:
+            info_list_selbst.append('Connection Status: ERROR404')
+        if roverinfo == 9:
+            if sondeaktiv == False:
+                info_list_selbst.append('Sonde nicht aktiv')
+            elif sondeaktiv == True:
+                if 'Sonde nicht aktiv' in info_list_selbst:
+                    info_list_selbst.remove('Sonde nicht aktiv')
+                    info_list_selbst.append('Sonde ist aktiv')
+                else:
+                    info_list_selbst.append('Sonde ist aktiv')
+            else:
+                info_list_selbst.append('Sondenstatus nicht erkennbar...')
+
+
+    else:
+        pass
 
 def saveloop():
     global autosave
